@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">Water Tracker</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <string-array name="Hours">
+        <item>Choose</item>
+        <item>09:00</item>
+        <item>10:00</item>
+        <item>11:00</item>
+        <item>12:00</item>
+        <item>13:00</item>
+        <item>14:00</item>
+        <item>15:00</item>
+        <item>16:00</item>
+        <item>17:00</item>
+        <item>18:00</item>
+        <item>19:00</item>
+        <item>20:00</item>
+        <item>21:00</item>
+        <item>22:00</item>
+    </string-array>
+
+    <string-array name="Goal">
+        <item>Choose</item>
+        <item>600 </item>
+        <item>800 </item>
+        <item>1000 </item>
+        <item>1200 </item>
+        <item>1400</item>
+        <item>1600 </item>
+        <item>1800 </item>
+        <item>2000 </item>
+        <item>2200 </item>
+        <item>2400 </item>
+        <item>2600 </item>
+        <item>2800 </item>
+        <item>3000 </item>
+
+
+    </string-array>
+
+</resources>

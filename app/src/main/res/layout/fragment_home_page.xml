@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/backgroundimage"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="323dp"
+        android:layout_height="73dp"
+        android:layout_marginTop="52dp"
+        android:text="Choose the reminder time interval and target. (200 mL = 1 Glass)"
+        android:textAlignment="center"
+        android:textIsSelectable="false"
+        android:textSize="20sp"
+        android:textStyle="italic"
+        app:autoSizeTextType="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="380dp"
+        android:layout_height="39dp"
+        android:layout_marginTop="120dp"
+        android:background="@drawable/background"
+        android:gravity="center"
+        android:hint="Name Surname"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+    </EditText>
+
+    <LinearLayout
+        android:id="@+id/lltime"
+
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/background"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="@+id/editText"
+        app:layout_constraintStart_toStartOf="@+id/editText"
+        app:layout_constraintTop_toBottomOf="@+id/editText">
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Time Range"
+            android:textColor="@color/black" />
+
+        <Spinner
+            android:id="@+id/spinnerBegin"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Spinner
+            android:id="@+id/spinnerFinish"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llGoal"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/background"
+        android:orientation="horizontal"
+
+        app:layout_constraintEnd_toEndOf="@+id/lltime"
+        app:layout_constraintStart_toStartOf="@+id/lltime"
+        app:layout_constraintTop_toBottomOf="@+id/lltime">
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Goal (mL)"
+            android:textColor="@color/black" />
+
+        <Spinner
+            android:id="@+id/spinnerGoal"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="55dp"
+        android:background="@drawable/background"
+        android:orientation="horizontal"
+
+        app:layout_constraintEnd_toEndOf="@+id/btnCheck"
+        app:layout_constraintStart_toStartOf="@+id/btnCheck"
+        app:layout_constraintTop_toBottomOf="@+id/btnCheck">
+
+
+        <TextView
+            android:id="@+id/tvBegin"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Text1"
+            android:textColor="@color/black"
+            android:textSize="16sp">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/tvFinish"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Text2"
+            android:textColor="@color/black"
+            android:textSize="16dp" />
+
+        <TextView
+            android:id="@+id/tvGoal"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Text3"
+            android:textColor="@color/black"
+            android:textSize="16dp">
+
+        </TextView>
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnCheck"
+        android:layout_width="380dp"
+        android:layout_height="54dp"
+        android:layout_marginTop="35dp"
+        android:src="@drawable/twotone_check_24"
+        app:layout_constraintEnd_toEndOf="@+id/llGoal"
+        app:layout_constraintStart_toStartOf="@+id/llGoal"
+        app:layout_constraintTop_toBottomOf="@+id/llGoal"
+        app:tint="@color/white" />
+
+
+    <ImageButton
+        android:id="@+id/removeWaterLevel"
+        android:layout_width="160dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/minus"
+        app:layout_constraintEnd_toStartOf="@+id/addWaterLevel"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout3"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:tint="@color/white" />
+
+    <ImageButton
+        android:id="@+id/addWaterLevel"
+        android:layout_width="160dp"
+        android:layout_height="55dp"
+        android:layout_marginTop="44dp"
+        android:src="@drawable/add"
+        app:layout_constraintEnd_toEndOf="@+id/linearLayout3"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:tint="@color/white" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
