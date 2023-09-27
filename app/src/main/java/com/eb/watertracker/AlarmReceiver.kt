@@ -12,11 +12,12 @@ import androidx.core.app.NotificationCompat
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-
         createNotification(context)
         sendNotification(context)
-
     }
+
+    // Kanal kullanma sebebi ;
+    // bildirimlerin gruplandırılması, önceliklerinin belirlenmesi ve kullanıcıya bildirim tercihlerini yönetme imkanı sağlar.
     fun createNotification(context: Context) {
         var notificationManager: NotificationManager =
             context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

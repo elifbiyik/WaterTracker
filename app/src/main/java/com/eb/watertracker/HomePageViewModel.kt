@@ -1,6 +1,8 @@
 package com.eb.watertracker
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.NotificationChannel
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -38,7 +40,6 @@ class HomePageViewModel : ViewModel() {
             editor.apply()
         }
         loginMutableLiveData.value = sharedPreferences
-
     }
 
     fun sharedPreferenceForUser(context: Context, lastGoal: String, name: String, count: Int) {
@@ -76,8 +77,8 @@ class HomePageViewModel : ViewModel() {
                 )
             }
         val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hours)
-            set(Calendar.MINUTE, min)
+            set(Calendar.HOUR_OF_DAY, hours)        // 14
+            set(Calendar.MINUTE, min)               // 0
             set(Calendar.SECOND, 0)
 
             // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
@@ -91,6 +92,9 @@ class HomePageViewModel : ViewModel() {
             AlarmManager.INTERVAL_DAY,
             intent
         )
+
+        Log.d("xxxxSystem.currentTimeMillis()", System.currentTimeMillis().toString())
+        Log.d("xxxxSystem.currentTimeMillis()", calendar.timeInMillis.toString())
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -116,8 +120,9 @@ class HomePageViewModel : ViewModel() {
             set(Calendar.MINUTE, min)
             set(Calendar.SECOND, 0)
 
+            var x = System.currentTimeMillis()
             // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
-            if (timeInMillis == System.currentTimeMillis()) {
+            if (timeInMillis == x) {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
         }
@@ -127,7 +132,6 @@ class HomePageViewModel : ViewModel() {
             AlarmManager.INTERVAL_DAY,
             intent
         )
-
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -143,7 +147,7 @@ class HomePageViewModel : ViewModel() {
         var alarmFinishTime = Calendar.getInstance()
         val currentHour =
             Calendar.getInstance().get(Calendar.HOUR_OF_DAY) // içinde bulunulan saati alıyor.
-        if (currentHour == 0) {
+        if (currentHour == 23) {
             alarmFinishTime.add(Calendar.DAY_OF_YEAR, 1)
             editor.remove("lastGoal")
             editor.remove("count")
@@ -168,14 +172,10 @@ class HomePageViewModel : ViewModel() {
         alarmFinishTime[Calendar.HOUR_OF_DAY] = hoursFinish
         alarmFinishTime[Calendar.MINUTE] = minFinish
 
-        // timeInMillis = 3249417 / 60*1000 = 54:15... dakika
-
         var difference = alarmFinishTime.timeInMillis - alarmStartTime.timeInMillis
         var difMinute = (difference / (60 * 1000))
-
         var lastGoalGlass = lastGoal.toInt() / 200
-        var alarmTimeRange = difMinute / lastGoalGlass
-        // Kaç dakika sonra diğer bardak içilmeli
+        var alarmTimeRange = difMinute / lastGoalGlass   // Kaç dakika sonra diğer bardak içilmeli
 
         var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java)
@@ -188,11 +188,16 @@ class HomePageViewModel : ViewModel() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val currentTimeMillis = System.currentTimeMillis()
+        val currentTimeMillis = alarmStartTime.timeInMillis  //System.currentTimeMillis()
         val triggerTime = currentTimeMillis + (alarmTimeRange * 60 * 1000)
 
+        Log.d("xxxxxxxxxxxbutonCurrentMilliis", currentTimeMillis.toString())
+        Log.d("xxxxxxxxxxxbutonCurrentMilliis", (alarmTimeRange * 60 * 1000).toString())
+
+
+        // setAndAllowWhileIdle -> idle modu, telefonun ekranı kapalı ve kullanıcının cihazı kullanmadığı moddur.
         alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            AlarmManager.RTC_WAKEUP,
             triggerTime,
             pendingIntent
         )

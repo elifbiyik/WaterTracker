@@ -74,11 +74,9 @@ class HomePageFragment : Fragment() {
             viewModel.lastReminder(requireContext(), userFinish.toString())
         }
 
-
         viewModel.userMutableLiveData.observe(viewLifecycleOwner, Observer {
             userCount = sharedPreferencesUser.getString("count", "").toString()
             userLastGoal = sharedPreferencesUser.getString("lastGoal", "").toString()
-
         })
 
         viewModel.loginMutableLiveData.observe(viewLifecycleOwner, Observer {
@@ -167,10 +165,6 @@ class HomePageFragment : Fragment() {
         }
 
         if (userName != "") {
-
-    //        viewModel.startReminder(requireContext(), userBegin.toString())
-      //      viewModel.lastReminder(requireContext(), userFinish.toString())
-
             val beginPosition = hours.indexOf(userBegin)
             binding.spinnerBegin.setSelection(beginPosition)
 
@@ -194,13 +188,13 @@ class HomePageFragment : Fragment() {
 
         var isChecked = true
         binding.btnCheck.setOnClickListener {
-            var name = binding.editText.text.toString()
+    //        var name = binding.editText.text.toString()
             isChecked = !isChecked
             if (isChecked) {
-                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && name != "") {
+                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && userName != "") {
                     Log.d("name", userName.toString())
                     if (begin!! < finish!!) {
-                        saveInfo(begin!!, finish!!, goal!!, name)
+                        saveInfo(begin!!, finish!!, goal!!, userName.toString())
                         Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
                         binding.btnCheck.setImageResource(R.drawable.baseline_edit_24)
                     } else {
@@ -218,9 +212,9 @@ class HomePageFragment : Fragment() {
                     ).show()
                 }
             } else {
-                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && name != "") {
+                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && userName != "") {
                     if (begin!! < finish!!) {
-                        editInfo(begin!!, finish!!, goal!!, name)
+                        editInfo(begin!!, finish!!, goal!!, userName.toString())
                         Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
                         binding.btnCheck.setImageResource(R.drawable.twotone_check_24)
                     } else {
@@ -240,9 +234,7 @@ class HomePageFragment : Fragment() {
             }
         }
 
-
         binding.addWaterLevel.setOnClickListener {
-
             var goal_ = (binding.tvGoal.text as String?)?.toInt()
             if (goal_ == 0) {
                 Toast.makeText(context, "You done !", Toast.LENGTH_SHORT).show()
