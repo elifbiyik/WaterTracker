@@ -1,8 +1,13 @@
 package com.eb.watertracker
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,8 +18,11 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.eb.watertracker.databinding.FragmentHomePageBinding
+
 
 class HomePageFragment : Fragment() {
 
@@ -37,7 +45,48 @@ class HomePageFragment : Fragment() {
         var begin: String? = null
         var finish: String? = null
         var goal: String? = null
+        var count = 0
 
+        viewModel.newDay(requireContext())
+
+        var sharedPreferencesUser = requireActivity().getSharedPreferences(
+            "userData", AppCompatActivity.MODE_PRIVATE
+        )
+        var sharedPreferencesLogin = requireActivity().getSharedPreferences(
+            "user", AppCompatActivity.MODE_PRIVATE
+        )
+        var userLastGoal = sharedPreferencesUser.getString("lastGoal", "")
+        var userCount = sharedPreferencesUser.getString("count", "")
+
+        var userName = sharedPreferencesLogin.getString("name", "")
+        var userBegin = sharedPreferencesLogin.getString("begin", "")
+        var userFinish = sharedPreferencesLogin.getString("finish", "")
+        var userGoal = sharedPreferencesLogin.getString("goal", "")
+
+        if (userLastGoal == "") {
+            binding.tvGoal.text = userGoal
+        } else {
+            binding.tvGoal.text = userLastGoal
+        }
+
+        if(userBegin != "") {
+            viewModel.startReminder(requireContext(), userBegin.toString())
+            viewModel.lastReminder(requireContext(), userFinish.toString())
+        }
+
+
+        viewModel.userMutableLiveData.observe(viewLifecycleOwner, Observer {
+            userCount = sharedPreferencesUser.getString("count", "").toString()
+            userLastGoal = sharedPreferencesUser.getString("lastGoal", "").toString()
+
+        })
+
+        viewModel.loginMutableLiveData.observe(viewLifecycleOwner, Observer {
+            userName = sharedPreferencesLogin.getString("name", "").toString()
+            userBegin = sharedPreferencesLogin.getString("begin", "").toString()
+            userFinish = sharedPreferencesLogin.getString("finish", "").toString()
+            userGoal = sharedPreferencesLogin.getString("goal", "").toString()
+        })
 
         val hours = resources.getStringArray(R.array.Hours)
         if (binding.spinnerBegin != null) { // başlangıç değerini kontrol ediyor
@@ -90,17 +139,23 @@ class HomePageFragment : Fragment() {
                     override fun onItemSelected(
                         parent: AdapterView<*>?, view: View?, position: Int, id: Long
                     ) {
-
                         goal = goals[position]
 
-                        var sharedPreferencesUser = requireActivity().getSharedPreferences(
-                            "userData", AppCompatActivity.MODE_PRIVATE
-                        )
-                        val userLastGoal = sharedPreferencesUser.getString("lastGoal", "")
-                        if(!userLastGoal.isNullOrEmpty()) {
-                            binding.tvGoal.text = userLastGoal
-                        } else {
+                        if (userCount == "") {
                             binding.tvGoal.text = goal
+                        } else if (userCount!!.isNotEmpty()) {
+                            if (!userLastGoal.isNullOrEmpty()) {
+                                var countUser = userCount!!.toInt()
+                                var x = goal.toString().toInt().plus(countUser).toString()
+                                binding.tvGoal.text = x
+
+                            } else {
+                                binding.tvGoal.text = goal
+                            }
+                        } else {
+                            var countUser = userCount!!.toInt()
+                            var x = goal.toString().toInt().plus(countUser).toString()
+                            binding.tvGoal.text = x
                         }
 // sharedPreference'ı burda yaptık çünkü ; tv'ye hep goal yazılıyordu. bu sayede lastGoal yazılıyor.
                     }
@@ -111,25 +166,10 @@ class HomePageFragment : Fragment() {
                 }
         }
 
-        var sharedPreferencesLogin = requireActivity().getSharedPreferences(
-            "user", AppCompatActivity.MODE_PRIVATE
-        )
+        if (userName != "") {
 
-
-        val userName = sharedPreferencesLogin.getString("name", "")
-        val userBegin = sharedPreferencesLogin.getString("begin", "")
-        val userFinish = sharedPreferencesLogin.getString("finish", "")
-        val userGoal = sharedPreferencesLogin.getString("goal", "")
-
-
-
-
-
-
-        if (!userName.isNullOrEmpty()) {
-            viewModel.startReminder(requireContext(), userBegin.toString())
-            viewModel.lastReminder(requireContext(), userFinish.toString())
-            viewModel.newDay(requireContext(), goal = userGoal.toString(), tvGoal = binding.tvGoal)
+    //        viewModel.startReminder(requireContext(), userBegin.toString())
+      //      viewModel.lastReminder(requireContext(), userFinish.toString())
 
             val beginPosition = hours.indexOf(userBegin)
             binding.spinnerBegin.setSelection(beginPosition)
@@ -146,13 +186,10 @@ class HomePageFragment : Fragment() {
             binding.btnCheck.setImageResource(R.drawable.baseline_edit_24)
 
             itemsStatus(false)
-            binding.addWaterLevel.isEnabled = true
-            binding.removeWaterLevel.isEnabled = true
         } else {
             binding.btnCheck.setImageResource(R.drawable.twotone_check_24)
             itemsStatus(true)
-            binding.addWaterLevel.isEnabled = false
-            binding.removeWaterLevel.isEnabled = false
+
         }
 
         var isChecked = true
@@ -160,27 +197,51 @@ class HomePageFragment : Fragment() {
             var name = binding.editText.text.toString()
             isChecked = !isChecked
             if (isChecked) {
-                if (begin != "Choose" && finish != "Choose" && goal != "Choose") {
-                    saveInfo(begin!!, finish!!, goal!!, name)
-                    Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
-                    binding.btnCheck.setImageResource(R.drawable.baseline_edit_24)
+                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && name != "") {
+                    Log.d("name", userName.toString())
+                    if (begin!! < finish!!) {
+                        saveInfo(begin!!, finish!!, goal!!, name)
+                        Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
+                        binding.btnCheck.setImageResource(R.drawable.baseline_edit_24)
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "The start time of the day should be less than the end time",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
-                    Toast.makeText(context, "You must choose in the required fields or fill name !", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "You must choose in the required fields or fill name !",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } else {
-                if (begin != "Choose" && finish != "Choose" && goal != "Choose") {
-                    editInfo(begin!!, finish!!, goal!!, name)
-                    Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
-                    binding.btnCheck.setImageResource(R.drawable.twotone_check_24)
+                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && name != "") {
+                    if (begin!! < finish!!) {
+                        editInfo(begin!!, finish!!, goal!!, name)
+                        Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
+                        binding.btnCheck.setImageResource(R.drawable.twotone_check_24)
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "The start time of the day should be less than the end time",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 } else {
-                    Toast.makeText(context, "You must choose in the required fields or fill name !", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "You must choose in the required fields or fill name !",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
 
+
         binding.addWaterLevel.setOnClickListener {
-            viewModel.createNotification(requireContext())
-            viewModel.notification(requireContext())
 
             var goal_ = (binding.tvGoal.text as String?)?.toInt()
             if (goal_ == 0) {
@@ -188,21 +249,60 @@ class HomePageFragment : Fragment() {
                 var addGlass = goal_ + 200
                 goal_ = addGlass
                 binding.tvGoal.text = "+$goal_"
+                if (userCount != "") {
+                    count = (userCount?.toInt() ?: 0) + 200
+                } else {
+                    count = 0
+                }
 
-                sharedPreferenceForUser("+$goal_", userName.toString())
+                viewModel.sharedPreferenceForUser(
+                    requireContext(),
+                    "+$goal_",
+                    userName.toString(),
+                    count
+                )
             } else if (binding.tvGoal.text.contains("+")) {
                 var addGlass = goal_?.plus(200)
                 goal_ = addGlass
                 binding.tvGoal.text = "+$goal_"
+                if (userCount != "") {
+                    count = (userCount?.toInt() ?: 0) + 200
+                } else {
+                    count = 0
+                }
 
-                sharedPreferenceForUser("+$goal_", userName.toString())
+                viewModel.sharedPreferenceForUser(
+                    requireContext(),
+                    "+$goal_",
+                    userName.toString(),
+                    count
+                )
             } else {
                 var lastGoal = goal_?.minus(200).toString()
-                goal_ = lastGoal.toInt()
-                binding.tvGoal.text = goal_.toString()
+                binding.tvGoal.text = lastGoal
+                if (userCount != "") {
+                    count = (userCount?.toInt() ?: 0) - 200
+                } else {
+                    count = 0
+                }
 
-                sharedPreferenceForUser(lastGoal, userName.toString())
+                viewModel.sharedPreferenceForUser(
+                    requireContext(),
+                    lastGoal,
+                    userName.toString(),
+                    count
+                )
+                if(lastGoal == "0" ) {
+                    Toast.makeText(context, "Done !!", Toast.LENGTH_SHORT).show()
+                }else {
+                    viewModel.timeNotification(
+                        requireContext(),
+                        userFinish.toString(),
+                        lastGoal
+                    )
+                }
             }
+
         }
 
         binding.removeWaterLevel.setOnClickListener {
@@ -212,83 +312,67 @@ class HomePageFragment : Fragment() {
                 var removeGlass = goal_?.minus(200)
                 goal_ = removeGlass
                 binding.tvGoal.text = "+$goal_"
+                if (userCount != "") {
+                    count = (userCount?.toInt() ?: 0) - 200
+                } else {
+                    count = 0
+                }
 
-                sharedPreferenceForUser("+$goal_", userName.toString())
+                viewModel.sharedPreferenceForUser(
+                    requireContext(),
+                    "+$goal_",
+                    userName.toString(),
+                    count
+                )
             } else if (binding.tvGoal.text == "+0") {
                 binding.tvGoal.text = "0"
                 var lastGoal = goal_?.plus(200).toString()
                 goal_ = lastGoal.toInt()
                 binding.tvGoal.text = goal_.toString()
-
-                sharedPreferenceForUser(lastGoal, userName.toString())
+                if (userCount != "") {
+                    count = (userCount?.toInt() ?: 0) + 200
+                } else {
+                    count = 0
+                }
+                viewModel.sharedPreferenceForUser(
+                    requireContext(),
+                    lastGoal,
+                    userName.toString(),
+                    count
+                )
             } else if (goal_ == goal?.toInt()) {
                 Toast.makeText(context, "Okey", Toast.LENGTH_SHORT).show()
             } else {
                 var lastGoal = goal_?.plus(200).toString()
                 goal_ = lastGoal.toInt()
                 binding.tvGoal.text = goal_.toString()
+                if (userCount != "") {
+                    count = (userCount?.toInt() ?: 0) + 200
+                } else {
+                    count = 0
+                }
 
-                sharedPreferenceForUser(lastGoal, userName.toString())
+                viewModel.sharedPreferenceForUser(
+                    requireContext(),
+                    lastGoal,
+                    userName.toString(),
+                    count
+                )
             }
         }
         return binding.root
     }
 
-    fun sharedPreferenceLogin(begin: String, finish: String, goal: String, name: String) {
-
-        var sharedPreferences = requireActivity().getSharedPreferences(
-            "user", AppCompatActivity.MODE_PRIVATE
-        )
-        if (name != "") {
-            var editor = sharedPreferences.edit()
-            editor.putString("name", name)
-            editor.putString("begin", begin)
-            editor.putString("finish", finish)
-            editor.putString("goal", goal)
-            editor.putString("goal", goal)
-            editor.apply()
-        }
-    }
-
-    fun sharedPreferenceForUser(lastGoal: String, name: String) {
-
-        var sharedPreferences = requireActivity().getSharedPreferences(
-            "userData", AppCompatActivity.MODE_PRIVATE
-        )
-        if (name != "") {
-            var editor = sharedPreferences.edit()
-            editor.putString("name", name)
-            editor.putString("lastGoal", lastGoal)
-            editor.apply()
-        }
-    }
-
+    @SuppressLint("ResourceAsColor")
     fun saveInfo(begin: String, finish: String, goal: String, name: String) {
-
-        if (begin < finish) {
-            sharedPreferenceLogin(begin, finish, goal, name)
-            itemsStatus(false)
-            binding.addWaterLevel.isEnabled = true
-            binding.removeWaterLevel.isEnabled = true
-        } else {
-            Toast.makeText(requireContext(), "Null", Toast.LENGTH_SHORT).show()
-        }
+        viewModel.sharedPreferenceLogin(requireContext(), begin, finish, goal, name)
+        itemsStatus(false)
     }
 
+    @SuppressLint("ResourceAsColor")
     fun editInfo(begin: String, finish: String, goal: String, name: String) {
-
-        if (begin < finish) {
-            sharedPreferenceLogin(begin, finish, goal, name)
-
-            itemsStatus(true)
-            binding.addWaterLevel.isEnabled = false
-            binding.removeWaterLevel.isEnabled = false
-
-        } else {
-            itemsStatus(true)
-            binding.addWaterLevel.isEnabled = false
-            binding.removeWaterLevel.isEnabled = false
-        }
+        viewModel.sharedPreferenceLogin(requireContext(), begin, finish, goal, name)
+        itemsStatus(true)
     }
 
     fun itemsStatus(status: Boolean) {
@@ -296,6 +380,16 @@ class HomePageFragment : Fragment() {
         binding.spinnerBegin.isEnabled = status
         binding.spinnerFinish.isEnabled = status
         binding.spinnerGoal.isEnabled = status
+
+        binding.addWaterLevel.isEnabled = !status
+        binding.removeWaterLevel.isEnabled = !status
+        if (status == false) {
+            binding.addWaterLevel.setBackgroundResource(R.color.lightBlue)
+            binding.removeWaterLevel.setBackgroundResource(R.color.lightBlue)
+        } else {
+            binding.addWaterLevel.setBackgroundResource(R.color.grey)
+            binding.removeWaterLevel.setBackgroundResource(R.color.grey)
+        }
     }
 }
 

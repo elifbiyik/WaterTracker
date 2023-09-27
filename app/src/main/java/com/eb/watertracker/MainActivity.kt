@@ -10,18 +10,11 @@ import androidx.fragment.app.Fragment
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-            setTheme(R.style.AppTheme_DayNight)
-        } else {
-            setTheme(R.style.AppTheme)
-        }
-
-      //  delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
+    //    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+// Telefon dark mode ise uygulama dark moda geçer
 
 // Splash ekran
         Handler(Looper.getMainLooper()).postDelayed({
@@ -30,9 +23,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.constraint, fragment)
-            .addToBackStack(null)
-            .commit()
+        if (!isFinishing() && !isDestroyed() ) { // FragmentManager has been destroyed hatası verd. için yaz.
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.constraint, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
     }
 }

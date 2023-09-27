@@ -11,7 +11,7 @@
         android:id="@+id/textView"
         android:layout_width="323dp"
         android:layout_height="73dp"
-        android:layout_marginTop="52dp"
+        android:layout_marginTop="60dp"
         android:text="Choose the reminder time interval and target. (200 mL = 1 Glass)"
         android:textAlignment="center"
         android:textIsSelectable="false"
@@ -27,7 +27,7 @@
         android:id="@+id/editText"
         android:layout_width="380dp"
         android:layout_height="39dp"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="80dp"
         android:background="@drawable/background"
         android:gravity="center"
         android:hint="Name Surname"
@@ -89,7 +89,6 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/background"
         android:orientation="horizontal"
-
         app:layout_constraintEnd_toEndOf="@+id/lltime"
         app:layout_constraintStart_toStartOf="@+id/lltime"
         app:layout_constraintTop_toBottomOf="@+id/lltime">
@@ -115,18 +114,69 @@
             app:layout_constraintTop_toTopOf="parent" />
     </LinearLayout>
 
+
+
     <LinearLayout
-        android:id="@+id/linearLayout3"
+        android:id="@+id/linearLayout4"
         android:layout_width="380dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="55dp"
-        android:background="@drawable/background"
         android:orientation="horizontal"
-
         app:layout_constraintEnd_toEndOf="@+id/btnCheck"
         app:layout_constraintStart_toStartOf="@+id/btnCheck"
         app:layout_constraintTop_toBottomOf="@+id/btnCheck">
 
+        <TextView
+            android:id="@+id/tv1"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Begin Time"
+            android:textColor="@color/black"
+            android:textSize="12sp">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/tv2"
+            android:layout_width="0dp"
+            android:layout_height="43dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="End Time"
+            android:textColor="@color/black"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/tv3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:paddingBottom="10dp"
+            android:text="Remaining"
+            android:textColor="@color/black"
+            android:textSize="12dp">
+
+        </TextView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background"
+        android:orientation="horizontal"
+
+        app:layout_constraintEnd_toEndOf="@+id/linearLayout4"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout4"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
         <TextView
             android:id="@+id/tvBegin"
@@ -178,7 +228,8 @@
         app:layout_constraintEnd_toEndOf="@+id/llGoal"
         app:layout_constraintStart_toStartOf="@+id/llGoal"
         app:layout_constraintTop_toBottomOf="@+id/llGoal"
-        app:tint="@color/white" />
+        app:tint="@color/white"
+        android:backgroundTint="@color/lightBlue"/>
 
 
     <ImageButton

@@ -1,47 +1,62 @@
 package com.eb.watertracker
 
-import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
-import android.os.SystemClock
-import android.widget.TextView
+import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.util.Calendar
 
 class HomePageViewModel : ViewModel() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("ResourceAsColor")
-    fun notification(context: Context) {
-        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AlarmReceiver::class.java)
-        // AlarmReceiver sınıfına yönlendirilecek bir intent oluşur. (birbirleriyle iletişim kur.)
-        // Bildirim zamanı geldiğinde AlarmReceiver tetikleyecek
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    var userMutableLiveData = MutableLiveData<SharedPreferences>()
+    var loginMutableLiveData = MutableLiveData<SharedPreferences>()
+
+    fun sharedPreferenceLogin(
+        context: Context,
+        begin: String,
+        finish: String,
+        goal: String,
+        name: String
+    ) {
+        var sharedPreferences = context.getSharedPreferences(
+            "user", AppCompatActivity.MODE_PRIVATE
         )
-        // Alarm tetiklendiğinde gerçekleşecek işlemler pending intentte
-// Intent'in belirli bir zamanda veya belirli bir koşulda çalışmasını sağlayan bir araçtır.
+        if (name != "") {
+            var editor = sharedPreferences.edit()
+            editor.putString("name", name)
+            editor.putString("begin", begin)
+            editor.putString("finish", finish)
+            editor.putString("goal", goal)
+            editor.apply()
+        }
+        loginMutableLiveData.value = sharedPreferences
 
+    }
 
-        // Şu anki zaman
-        val currentTimeMillis = SystemClock.elapsedRealtime()
+    fun sharedPreferenceForUser(context: Context, lastGoal: String, name: String, count: Int) {
 
-        val oneHour = 3 * 1000 //60 * 60 * 1000 // 1 saat
-        val triggerTime = currentTimeMillis + oneHour
-//Bildirimin ne zaman gösterileceği belirlenen bir zamanı temsil eder.
+        var sharedPreferences = context.getSharedPreferences(
+            "userData", AppCompatActivity.MODE_PRIVATE
+        )
+        Log.d("Home", "share")
 
-        // Alarmı ayarla // pendingIntent tetiklenecek içindeki olaylar geçrkleşicek.
-        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pendingIntent)
+        if (name != "") {
+            var editor = sharedPreferences.edit()
+            editor.putString("name", name)
+            editor.putString("lastGoal", lastGoal)
+            editor.putString("count", count.toString())
+            editor.apply()
+        }
+        userMutableLiveData.value = sharedPreferences
+        Log.d("xxxxxxxxx", userMutableLiveData.value.toString())
     }
 
     fun startReminder(
@@ -52,109 +67,148 @@ class HomePageViewModel : ViewModel() {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val (hours, min) = reminderTime.split(":").map { it.toInt() }
         val intent =
-            Intent(context.applicationContext, AlarmReceiver::class.java).let { intent ->
+            Intent(context, AlarmReceiver::class.java).let { intent ->
                 PendingIntent.getBroadcast(
-                    context.applicationContext,
+                    context,
                     reminderId,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             }
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hours)
+            set(Calendar.MINUTE, min)
+            set(Calendar.SECOND, 0)
 
-// hours ve min split ile ayırdık. Aşağıya ayrı yrı verdik.
-        val alarmStartTime = Calendar.getInstance()
-        val now = Calendar.getInstance()
-        alarmStartTime[Calendar.HOUR_OF_DAY] = hours
-        alarmStartTime[Calendar.MINUTE] = min
-        if (now.after(alarmStartTime)) {
-            alarmStartTime.add(Calendar.DATE, 1)
+            // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
+            if (timeInMillis == System.currentTimeMillis()) {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
         }
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP, alarmStartTime.timeInMillis, intent
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            AlarmManager.INTERVAL_DAY,
+            intent
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun lastReminder(
         context: Context,
         reminderTime: String,
         reminderId: Int = 1
     ) {
 
-        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val (hours, min) = reminderTime.split(":").map { it.toInt() }
-
         val intent =
-            Intent(context.applicationContext, AlarmReceiver::class.java).let { intent ->
+            Intent(context, AlarmReceiver::class.java).let { intent ->
                 PendingIntent.getBroadcast(
-                    context.applicationContext,
+                    context,
                     reminderId,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             }
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hours)
+            set(Calendar.MINUTE, min)
+            set(Calendar.SECOND, 0)
 
-        var alarmFinishTime = Calendar.getInstance()
-        val now = Calendar.getInstance()
-        alarmFinishTime[Calendar.HOUR_OF_DAY] = hours - 1
-        alarmFinishTime[Calendar.MINUTE] = 50 // min - 10  // 10 dakika önce göndersin.
-        if (now.after(alarmFinishTime)) {
-            alarmFinishTime.add(Calendar.DATE, 1)
-        }
-        // Eğer saat geçmişse bir sonraki güne atar
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP, alarmFinishTime.timeInMillis, intent
-        )
-    }
-
-    fun newDay(
-        context: Context,
-        reminderId: Int = 1,
-        goal: String,
-        tvGoal: TextView
-    ) {
-        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        val intent =
-            Intent(context.applicationContext, AlarmReceiver::class.java).let { intent ->
-                PendingIntent.getBroadcast(
-                    context.applicationContext,
-                    reminderId,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
+            // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
+            if (timeInMillis == System.currentTimeMillis()) {
+                add(Calendar.DAY_OF_YEAR, 1)
             }
-
-        var alarmFinishTime = Calendar.getInstance()
-        val now = Calendar.getInstance()
-        alarmFinishTime[Calendar.HOUR_OF_DAY] = 24
-        alarmFinishTime[Calendar.MINUTE] = 0
-        if (now.after(alarmFinishTime)) {
-            alarmFinishTime.add(Calendar.DATE, 1)
-            tvGoal.text = goal // Bir sonraki gün olduğunda hedef yeniden başlsın ?
         }
-        // Eğer saat geçmişse bir sonraki güne atar
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP, alarmFinishTime.timeInMillis, intent
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            AlarmManager.INTERVAL_DAY,
+            intent
         )
-    }
 
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint("ResourceAsColor")
-    fun createNotification(context: Context) {
+    fun newDay(
+        context: Context,
+    ) {
 
-        var notificationManager: NotificationManager =
-            context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        var sharedPreferences = context.getSharedPreferences(
+            "userData", AppCompatActivity.MODE_PRIVATE
+        )
+        var editor = sharedPreferences.edit()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel_id = "com.eb.watertracker"
-            val message = "xxx"
-            val priority = NotificationManager.IMPORTANCE_DEFAULT
+        var alarmFinishTime = Calendar.getInstance()
+        val currentHour =
+            Calendar.getInstance().get(Calendar.HOUR_OF_DAY) // içinde bulunulan saati alıyor.
+        if (currentHour == 0) {
+            alarmFinishTime.add(Calendar.DAY_OF_YEAR, 1)
+            editor.remove("lastGoal")
+            editor.remove("count")
+            editor.apply()
+        }
+    }
 
-            var notificationChannel = NotificationChannel(channel_id, message, priority)
-            notificationManager.createNotificationChannel(notificationChannel)
+    fun timeNotification(
+        context: Context,
+        userFinish: String,
+        lastGoal: String
+    ) {
+
+        val alarmStartTime = Calendar.getInstance()
+        val currentHour = alarmStartTime.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = alarmStartTime.get(Calendar.MINUTE)
+        alarmStartTime[Calendar.HOUR_OF_DAY] = currentHour
+        alarmStartTime[Calendar.MINUTE] = currentMinute
+
+        val (hoursFinish, minFinish) = userFinish.split(":").map { it.toInt() }
+        val alarmFinishTime = Calendar.getInstance()
+        alarmFinishTime[Calendar.HOUR_OF_DAY] = hoursFinish
+        alarmFinishTime[Calendar.MINUTE] = minFinish
+
+        // timeInMillis = 3249417 / 60*1000 = 54:15... dakika
+
+        var difference = alarmFinishTime.timeInMillis - alarmStartTime.timeInMillis
+        var difMinute = (difference / (60 * 1000))
+
+        var lastGoalGlass = lastGoal.toInt() / 200
+        var alarmTimeRange = difMinute / lastGoalGlass
+        // Kaç dakika sonra diğer bardak içilmeli
+
+        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        // AlarmReceiver sınıfına yönlendirilecek bir intent oluşur. (birbirleriyle iletişim kur.)
+        // Bildirim zamanı geldiğinde AlarmReceiver tetikleyecek
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val currentTimeMillis = System.currentTimeMillis()
+        val triggerTime = currentTimeMillis + (alarmTimeRange * 60 * 1000)
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+
+        if (alarmFinishTime < alarmStartTime) {
+            Toast.makeText(
+                context,
+                "You can do it ! ",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(
+                context,
+                "The next alarm is in ${alarmTimeRange} minutes. ",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
