@@ -1,8 +1,6 @@
 package com.eb.watertracker
 
-import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.NotificationChannel
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -43,7 +41,6 @@ class HomePageViewModel : ViewModel() {
     }
 
     fun sharedPreferenceForUser(context: Context, lastGoal: String, name: String, count: Int) {
-
         var sharedPreferences = context.getSharedPreferences(
             "userData", AppCompatActivity.MODE_PRIVATE
         )
@@ -66,7 +63,7 @@ class HomePageViewModel : ViewModel() {
         reminderId: Int = 1
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val (hours, min) = reminderTime.split(":").map { it.toInt() }
+        //    val (hours, min) = reminderTime.split(":").map { it.toInt() }
         val intent =
             Intent(context, AlarmReceiver::class.java).let { intent ->
                 PendingIntent.getBroadcast(
@@ -76,25 +73,62 @@ class HomePageViewModel : ViewModel() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             }
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hours)        // 14
-            set(Calendar.MINUTE, min)               // 0
-            set(Calendar.SECOND, 0)
+        /*      val calendar = Calendar.getInstance().apply {
+                  set(Calendar.HOUR_OF_DAY, hours)        // 14
+                  set(Calendar.MINUTE, min)               // 0
+                  set(Calendar.SECOND, 0)
 
-            // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
-            if (timeInMillis == System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
-            }
-        }
-        alarmManager.setRepeating(
+                  // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
+                  if (timeInMillis == System.currentTimeMillis()) {
+                      add(Calendar.DAY_OF_YEAR, 1)
+                  }
+              }
+              *//*        alarmManager.setRepeating(
+                    AlarmManager.RTC_WAKEUP,
+                    calendar.timeInMillis,
+                    AlarmManager.INTERVAL_DAY,
+                    intent
+                )*//*
+        alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
+            intent
+        )
+*/
+
+
+        val currentTime = Calendar.getInstance()
+        val currentHour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = currentTime.get(Calendar.MINUTE)
+        currentTime[Calendar.HOUR_OF_DAY] = currentHour
+        currentTime[Calendar.MINUTE] = currentMinute
+
+        val (hours, min) = reminderTime.split(":").map { it.toInt() }
+        val alarmBeginTime = Calendar.getInstance()
+        alarmBeginTime[Calendar.HOUR_OF_DAY] = hours
+        alarmBeginTime[Calendar.MINUTE] = min
+
+
+        val currentTimeMillis = currentTime.timeInMillis
+
+        if (currentTimeMillis == alarmBeginTime.timeInMillis) {
+            currentTime.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            alarmBeginTime.timeInMillis,
             intent
         )
 
+
+
+
+
+
+
         Log.d("xxxxSystem.currentTimeMillis()", System.currentTimeMillis().toString())
-        Log.d("xxxxSystem.currentTimeMillis()", calendar.timeInMillis.toString())
+        //     Log.d("xxxxSystem.currentTimeMillis()", calendar.timeInMillis.toString())
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -118,7 +152,6 @@ class HomePageViewModel : ViewModel() {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hours)
             set(Calendar.MINUTE, min)
-            set(Calendar.SECOND, 0)
 
             var x = System.currentTimeMillis()
             // Eğer belirlenen saat geçmişse, ertesi gün için ayarla
@@ -126,10 +159,10 @@ class HomePageViewModel : ViewModel() {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
         }
-        alarmManager.setRepeating(
+
+        alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
             intent
         )
     }
@@ -138,7 +171,6 @@ class HomePageViewModel : ViewModel() {
     fun newDay(
         context: Context,
     ) {
-
         var sharedPreferences = context.getSharedPreferences(
             "userData", AppCompatActivity.MODE_PRIVATE
         )
@@ -147,6 +179,7 @@ class HomePageViewModel : ViewModel() {
         var alarmFinishTime = Calendar.getInstance()
         val currentHour =
             Calendar.getInstance().get(Calendar.HOUR_OF_DAY) // içinde bulunulan saati alıyor.
+
         if (currentHour == 23) {
             alarmFinishTime.add(Calendar.DAY_OF_YEAR, 1)
             editor.remove("lastGoal")
@@ -154,6 +187,68 @@ class HomePageViewModel : ViewModel() {
             editor.apply()
         }
     }
+
+    fun x(
+        context: Context,
+        reminderTime: String
+    ) {
+        val alarmStartTime = Calendar.getInstance()
+        val (hours, min) = reminderTime.split(":").map { it.toInt() }
+        alarmStartTime[Calendar.HOUR_OF_DAY] = hours
+        alarmStartTime[Calendar.MINUTE] = min
+
+        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val currentTimeMillis = alarmStartTime.timeInMillis
+
+        if (currentTimeMillis == alarmStartTime.timeInMillis) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                currentTimeMillis,
+                pendingIntent
+            )
+        }
+    }
+
+    fun y(
+        context: Context,
+        reminderTime: String
+    ) {
+
+        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        var alarmTime = Calendar.getInstance()
+        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) // içinde bulunulan saati alıyor.
+        val currentMin = Calendar.getInstance().get(Calendar.MINUTE) // içinde bulunulan saati alıyor.
+
+        val (hours, min) = reminderTime.split(":").map { it.toInt() }
+        
+        if (currentHour == hours && min == currentMin) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                alarmTime.timeInMillis,
+                pendingIntent
+            )
+
+        }
+
+
+    }
+
 
     fun timeNotification(
         context: Context,
@@ -173,9 +268,11 @@ class HomePageViewModel : ViewModel() {
         alarmFinishTime[Calendar.MINUTE] = minFinish
 
         var difference = alarmFinishTime.timeInMillis - alarmStartTime.timeInMillis
-        var difMinute = (difference / (60 * 1000))
+        //   var difMinute = (difference / (60 * 1000))
         var lastGoalGlass = lastGoal.toInt() / 200
-        var alarmTimeRange = difMinute / lastGoalGlass   // Kaç dakika sonra diğer bardak içilmeli
+        //  var alarmTimeRange = difMinute / lastGoalGlass   // Kaç dakika sonra diğer bardak içilmeli
+
+        var alarmTimeRange = difference / lastGoalGlass
 
         var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java)
@@ -189,11 +286,7 @@ class HomePageViewModel : ViewModel() {
         )
 
         val currentTimeMillis = alarmStartTime.timeInMillis  //System.currentTimeMillis()
-        val triggerTime = currentTimeMillis + (alarmTimeRange * 60 * 1000)
-
-        Log.d("xxxxxxxxxxxbutonCurrentMilliis", currentTimeMillis.toString())
-        Log.d("xxxxxxxxxxxbutonCurrentMilliis", (alarmTimeRange * 60 * 1000).toString())
-
+        val triggerTime = currentTimeMillis + alarmTimeRange//(alarmTimeRange * 60 * 1000)
 
         // setAndAllowWhileIdle -> idle modu, telefonun ekranı kapalı ve kullanıcının cihazı kullanmadığı moddur.
         alarmManager.setExactAndAllowWhileIdle(
@@ -211,7 +304,7 @@ class HomePageViewModel : ViewModel() {
         } else {
             Toast.makeText(
                 context,
-                "The next alarm is in ${alarmTimeRange} minutes. ",
+                "The next alarm is in ${alarmTimeRange / (60 * 1000)} minutes. ",
                 Toast.LENGTH_SHORT
             ).show()
         }

@@ -69,11 +69,6 @@ class HomePageFragment : Fragment() {
             binding.tvGoal.text = userLastGoal
         }
 
-        if(userBegin != "") {
-            viewModel.startReminder(requireContext(), userBegin.toString())
-            viewModel.lastReminder(requireContext(), userFinish.toString())
-        }
-
         viewModel.userMutableLiveData.observe(viewLifecycleOwner, Observer {
             userCount = sharedPreferencesUser.getString("count", "").toString()
             userLastGoal = sharedPreferencesUser.getString("lastGoal", "").toString()
@@ -165,6 +160,12 @@ class HomePageFragment : Fragment() {
         }
 
         if (userName != "") {
+     //       viewModel.startReminder(requireContext(), userBegin.toString())
+            viewModel.lastReminder(requireContext(), userFinish.toString())
+
+            viewModel.x(requireContext(), userBegin.toString())
+
+
             val beginPosition = hours.indexOf(userBegin)
             binding.spinnerBegin.setSelection(beginPosition)
 
@@ -294,7 +295,6 @@ class HomePageFragment : Fragment() {
                     )
                 }
             }
-
         }
 
         binding.removeWaterLevel.setOnClickListener {

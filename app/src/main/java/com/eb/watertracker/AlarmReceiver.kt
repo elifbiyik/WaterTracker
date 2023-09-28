@@ -1,5 +1,6 @@
 package com.eb.watertracker
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -26,8 +27,10 @@ class AlarmReceiver : BroadcastReceiver() {
             val channel_id = "com.eb.watertracker"
             val message = "Water Tracker Channel"
             val priority = NotificationManager.IMPORTANCE_HIGH //.IMPORTANCE_DEFAULT
+            val lockscreenVisibility = Notification.VISIBILITY_PUBLIC
 
             var notificationChannel = NotificationChannel(channel_id, message, priority)
+            notificationChannel.lockscreenVisibility = lockscreenVisibility // Kilit ekranı kapalıysa da bildirim gösterilecek.
             notificationManager.createNotificationChannel(notificationChannel)
         }
     }

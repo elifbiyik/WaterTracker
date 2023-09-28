@@ -6,6 +6,7 @@
 
     <string-array name="Hours">
         <item>Choose</item>
+        <item>08:00</item>
         <item>09:00</item>
         <item>10:00</item>
         <item>11:00</item>
