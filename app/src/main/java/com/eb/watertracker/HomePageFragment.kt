@@ -1,14 +1,8 @@
 package com.eb.watertracker
 
 import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,21 +12,15 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.eb.watertracker.databinding.FragmentHomePageBinding
-
 
 class HomePageFragment : Fragment() {
 
     private lateinit var binding: FragmentHomePageBinding
     private val viewModel: HomePageViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {}
-    }
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.O)
@@ -67,6 +55,24 @@ class HomePageFragment : Fragment() {
             binding.tvGoal.text = userGoal
         } else {
             binding.tvGoal.text = userLastGoal
+        }
+
+        val notificationTextBegin = "Good morning. Did you drink water?"
+        val notificationTextFinish = "Good evening. Did you reach your goal?"
+        if (userBegin != "") {
+            viewModel.scheduleNotification(
+                requireContext(),
+                userBegin.toString(),
+                notificationTextBegin
+            )
+        }
+
+        if (userFinish != "") {
+            viewModel.scheduleNotification(
+                requireContext(),
+                userFinish.toString(),
+                notificationTextFinish
+            )
         }
 
         viewModel.userMutableLiveData.observe(viewLifecycleOwner, Observer {
@@ -150,7 +156,6 @@ class HomePageFragment : Fragment() {
                             var x = goal.toString().toInt().plus(countUser).toString()
                             binding.tvGoal.text = x
                         }
-// sharedPreference'ı burda yaptık çünkü ; tv'ye hep goal yazılıyordu. bu sayede lastGoal yazılıyor.
                     }
 
                     override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -160,12 +165,6 @@ class HomePageFragment : Fragment() {
         }
 
         if (userName != "") {
-     //       viewModel.startReminder(requireContext(), userBegin.toString())
-            viewModel.lastReminder(requireContext(), userFinish.toString())
-
-            viewModel.x(requireContext(), userBegin.toString())
-
-
             val beginPosition = hours.indexOf(userBegin)
             binding.spinnerBegin.setSelection(beginPosition)
 
@@ -179,21 +178,17 @@ class HomePageFragment : Fragment() {
             binding.tvBegin.text = userBegin
             binding.tvFinish.text = userFinish
             binding.btnCheck.setImageResource(R.drawable.baseline_edit_24)
-
             itemsStatus(false)
         } else {
             binding.btnCheck.setImageResource(R.drawable.twotone_check_24)
             itemsStatus(true)
-
         }
 
         var isChecked = true
         binding.btnCheck.setOnClickListener {
-    //        var name = binding.editText.text.toString()
             isChecked = !isChecked
             if (isChecked) {
                 if (begin != "Choose" && finish != "Choose" && goal != "Choose" && userName != "") {
-                    Log.d("name", userName.toString())
                     if (begin!! < finish!!) {
                         saveInfo(begin!!, finish!!, goal!!, userName.toString())
                         Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
@@ -285,9 +280,9 @@ class HomePageFragment : Fragment() {
                     userName.toString(),
                     count
                 )
-                if(lastGoal == "0" ) {
+                if (lastGoal == "0") {
                     Toast.makeText(context, "Done !!", Toast.LENGTH_SHORT).show()
-                }else {
+                } else {
                     viewModel.timeNotification(
                         requireContext(),
                         userFinish.toString(),
@@ -384,4 +379,3 @@ class HomePageFragment : Fragment() {
         }
     }
 }
-

@@ -1,6 +1,5 @@
 package com.eb.watertracker
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -13,29 +12,27 @@ import androidx.core.app.NotificationCompat
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        createNotification(context)
-        sendNotification(context)
+        val notificationText =
+            intent.getStringExtra("notificationText") ?: "It's time to drink water!!!"
+        createNotification(context, notificationText)
     }
 
-    // Kanal kullanma sebebi ;
-    // bildirimlerin gruplandırılması, önceliklerinin belirlenmesi ve kullanıcıya bildirim tercihlerini yönetme imkanı sağlar.
-    fun createNotification(context: Context) {
+    fun createNotification(context: Context, notificationText: String) {
         var notificationManager: NotificationManager =
             context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel_id = "com.eb.watertracker"
             val message = "Water Tracker Channel"
-            val priority = NotificationManager.IMPORTANCE_HIGH //.IMPORTANCE_DEFAULT
-            val lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            val priority = NotificationManager.IMPORTANCE_HIGH
 
             var notificationChannel = NotificationChannel(channel_id, message, priority)
-            notificationChannel.lockscreenVisibility = lockscreenVisibility // Kilit ekranı kapalıysa da bildirim gösterilecek.
             notificationManager.createNotificationChannel(notificationChannel)
         }
+        sendNotification(context, notificationText)
     }
 
-    fun sendNotification(context: Context) {
+    fun sendNotification(context: Context, notificationText: String) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -50,15 +47,12 @@ class AlarmReceiver : BroadcastReceiver() {
 
         var builder = NotificationCompat.Builder(context, "com.eb.watertracker")
             .setContentTitle("Water Tracker")
-            .setContentText("It's time to drink water!!!")
+            .setContentText(notificationText)
             .setSmallIcon(R.drawable.glass)
             .setColor(Color.BLUE)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
         notificationManager.notify(0, builder.build())
-        //  Eğer bu değeri sabit bir değer olarak belirlerseniz,
-        //  her zaman aynı bildirim üzerine yazılır ve eski bildirimin üzerine yeni bildirimi getirir.
-
     }
 }

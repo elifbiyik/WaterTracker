@@ -12,17 +12,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-    //    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-// Telefon dark mode ise uygulama dark moda geçer
-
-// Splash ekran
         Handler(Looper.getMainLooper()).postDelayed({
             loadFragment(HomePageFragment())
         }, 2000)
     }
 
     fun loadFragment(fragment: Fragment) {
-        if (!isFinishing() && !isDestroyed() ) { // FragmentManager has been destroyed hatası verd. için yaz.
+        if (!isFinishing() && !isDestroyed() ) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.constraint, fragment)
                 .addToBackStack(null)

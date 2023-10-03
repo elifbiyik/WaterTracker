@@ -7,6 +7,5 @@
 
 
     <style name="Theme.WaterTracker" parent="Base.Theme.WaterTracker" />
-
     <color name="text_color">#000000</color> <!-- Dark mode için yazı rengi -->
 </resources>
