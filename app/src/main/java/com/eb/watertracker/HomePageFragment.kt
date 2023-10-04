@@ -15,12 +15,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.eb.watertracker.databinding.FragmentHomePageBinding
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 
 class HomePageFragment : Fragment() {
 
     private lateinit var binding: FragmentHomePageBinding
     private val viewModel: HomePageViewModel by viewModels()
-
+    private lateinit var banner : AdView
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(Build.VERSION_CODES.O)
@@ -29,6 +32,10 @@ class HomePageFragment : Fragment() {
     ): View? {
 
         binding = FragmentHomePageBinding.inflate(inflater, container, false)
+
+        banner = binding.adView
+        val adRequest = AdRequest.Builder().build()
+        banner.loadAd(adRequest)
 
         var begin: String? = null
         var finish: String? = null
@@ -186,9 +193,10 @@ class HomePageFragment : Fragment() {
 
         var isChecked = true
         binding.btnCheck.setOnClickListener {
+            var name = binding.editText.text
             isChecked = !isChecked
             if (isChecked) {
-                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && userName != "") {
+                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && name.isNotEmpty()) {
                     if (begin!! < finish!!) {
                         saveInfo(begin!!, finish!!, goal!!, userName.toString())
                         Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()
@@ -208,7 +216,7 @@ class HomePageFragment : Fragment() {
                     ).show()
                 }
             } else {
-                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && userName != "") {
+                if (begin != "Choose" && finish != "Choose" && goal != "Choose" && name.isNotEmpty()) {
                     if (begin!! < finish!!) {
                         editInfo(begin!!, finish!!, goal!!, userName.toString())
                         Toast.makeText(context, "Saved !", Toast.LENGTH_SHORT).show()

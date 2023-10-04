@@ -257,4 +257,22 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
         app:tint="@color/white" />
 
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="370dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintEnd_toEndOf="@+id/addWaterLevel"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/removeWaterLevel"
+        app:layout_constraintTop_toBottomOf="@+id/removeWaterLevel"
+        tools:ignore="MissingConstraints"></com.google.android.gms.ads.AdView>
+
+    <!--        app:adUnitId="ca-app-pub-7296724377570892/5201256210"
+-->
+
 </androidx.constraintlayout.widget.ConstraintLayout>
