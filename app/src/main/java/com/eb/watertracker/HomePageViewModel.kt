@@ -80,20 +80,6 @@ class HomePageViewModel : ViewModel() {
         )
     }
 
-    fun calculateNotificationTime(hours: Int, min: Int): Long {
-        val now = Calendar.getInstance()
-        val notificationTime = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hours)
-            set(Calendar.MINUTE, min)
-            set(Calendar.SECOND, 0)
-        }
-        // Eğer belirlenen saat şu andan önceyse, bir sonraki gün aynı saatte bildirim gönder
-        if (notificationTime.before(now)) {
-            notificationTime.add(Calendar.DATE, 1)
-        }
-        return notificationTime.timeInMillis
-    }
-
     fun newDay(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, NewDayReceiver::class.java)
@@ -113,7 +99,84 @@ class HomePageViewModel : ViewModel() {
         )
     }
 
+    fun calculateNotificationTime(hours: Int, min: Int): Long {
+        val now = Calendar.getInstance()
+        val notificationTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hours)
+            set(Calendar.MINUTE, min)
+            set(Calendar.SECOND, 0)
+        }
+        // Eğer belirlenen saat şu andan önceyse, bir sonraki gün aynı saatte bildirim gönder
+        if (notificationTime.before(now)) {
+            notificationTime.add(Calendar.DATE, 1)
+        }
+        return notificationTime.timeInMillis
+    }
+
+
+    fun calculateFinish (hours: Int, min: Int): Long {
+        val notificationTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hours)
+            set(Calendar.MINUTE, min)
+            set(Calendar.SECOND, 0)
+        }
+        return notificationTime.timeInMillis
+    }
+
+    fun calculateNow (): Long {
+        val now = Calendar.getInstance()
+        return now.timeInMillis
+    }
+
     fun timeNotification(
+        context: Context,
+        userFinish: String,
+        lastGoal: String
+    ) {
+        val (hoursFinish, minFinish) = userFinish.split(":").map { it.toInt() }
+
+        var alarmStartTime = calculateNow()
+        var alarmFinishTime = calculateFinish(hoursFinish, minFinish)
+
+        var difference = alarmFinishTime - alarmStartTime
+        var lastGoalGlass = lastGoal.toInt() / 200
+
+        var alarmTimeRange = difference / lastGoalGlass
+        val currentTimeMillis = alarmStartTime
+        val triggerTime = currentTimeMillis + alarmTimeRange
+
+        var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+
+        if (alarmFinishTime < alarmStartTime) {
+            Toast.makeText(
+                context,
+                "You can do it ! ",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(
+                context,
+                "The next alarm is in ${alarmTimeRange / (60 * 1000)} minutes. ",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+/*
+    fun timeNotification1(
         context: Context,
         userFinish: String,
         lastGoal: String
@@ -169,5 +232,5 @@ class HomePageViewModel : ViewModel() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-    }
+    }*/
 }
