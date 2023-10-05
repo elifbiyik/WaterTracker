@@ -17,6 +17,11 @@ class MainActivity : AppCompatActivity() {
         }, 2000)
     }
 
+    override fun onBackPressed() {
+        // Uygulamadan çıkış işlemleri
+        finish()
+    }
+
     fun loadFragment(fragment: Fragment) {
         if (!isFinishing() && !isDestroyed() ) {
             supportFragmentManager.beginTransaction()
