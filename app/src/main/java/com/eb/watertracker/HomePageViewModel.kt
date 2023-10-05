@@ -141,9 +141,8 @@ class HomePageViewModel : ViewModel() {
         var difference = alarmFinishTime - alarmStartTime
         var lastGoalGlass = lastGoal.toInt() / 200
 
-        var alarmTimeRange = difference / lastGoalGlass
-        val currentTimeMillis = alarmStartTime
-        val triggerTime = currentTimeMillis + alarmTimeRange
+        var alarmTimeRange = (alarmFinishTime - System.currentTimeMillis()) / lastGoalGlass
+        val triggerTime = System.currentTimeMillis() + alarmTimeRange
 
         var alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java)
@@ -160,7 +159,7 @@ class HomePageViewModel : ViewModel() {
             pendingIntent
         )
 
-        if (alarmFinishTime < alarmStartTime) {
+        if (alarmFinishTime < System.currentTimeMillis()) {
             Toast.makeText(
                 context,
                 "You can do it ! ",
@@ -176,7 +175,7 @@ class HomePageViewModel : ViewModel() {
     }
 
 /*
-    fun timeNotification1(
+    fun timeNotification(
         context: Context,
         userFinish: String,
         lastGoal: String
